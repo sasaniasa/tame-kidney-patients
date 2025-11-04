@@ -1,93 +1,82 @@
-# CAREMAP
+# Patient stratification using Time-Aware Multi-modal autoEncoder(TAME)
 
+This project implements **TAME (Time-Aware Multi-modal AutoEncoder)** for patient stratification using the **NephroCAGE** dataset.  
+TAME is designed to handle heterogeneous, longitudinal, and multi-modal clinical data to identify patient subgroups and risk profiles.
 
+## Data requirement 
+This project utilizes the NephroCAGE dataset, which must be placed in the NephroCAGE/ folder before running the pipelines.
 
-## Getting started
+## Installation and Environment Setup
+Create a virtual environment:
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://git.hahn-schickard.de/med-ki/student-projects/caremap.git
-git branch -M master
-git push -uf origin master
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
-## Integrate with your tools
+Once the virtual environment is activated, install the dependencies:
 
-- [ ] [Set up project integrations](https://git.hahn-schickard.de/med-ki/student-projects/caremap/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### TAME training pipeline
+Run this for training pipeline:
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+```bash
+python src/training.py
+```
+Trained model is saved in (`model_checkpoints`)
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+### Similarity matrix calculation
+To extract the real time series values and impute them with TAME output:
+```bash
+python src/dist_mat.py
+```
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+### Clustering using similarity matrix
+Patient subtyping on similarity matrix and evaluation are implemented in Jupyter notebook: (`notebooks/clustering_similarity.ipynb`)
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+### Clustering using TAME-based embeddings
+Embeddings extraction and patient subtyping on TAME-based embeddings, along with validation of subgroups are implemented in Jupyter notebook: (`notebooks/clustering_emb.ipynb`)
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+### Health outcomes prediction
+Related embeddings extraction, training classifiers and SHAP analysis are implemented in Jupyter notebook: (`notebooks/classification.ipynb`)
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+### Source Code (`src/`)
 
-## License
-For open source projects, say how it is licensed.
+- `config.py` – Global configuration parameters (e.g., list of numerical features, embedding size).
+- `dist_mat.py` –  Compute distance matrices using dtw.
+- `dtw.py` – Dynamic Time Warping (DTW) utilities.
+- `function.py` – General helper functions (e.g., nRMSE loss).
+- `myloss.py` – Custom loss function implementations.
+- `preprocessing.py` – Data preprocessing pipeline.
+- `tame.py` – Main TAME model implementation.
+- `training.py` – TAME Training and evaluation pipeline.
+- `wkmeans.py` – Functions for Weighted K-Means clustering.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+### Notebooks (`notebooks/`)
+
+- `classification.ipynb` - Experiments on patient classification using learned embeddings.
+- `clustering_emb.ipynb` - Clustering performed directly on embeddings to explore patient subgroups.
+- `clustering_similarity.ipynb` – Clustering based on similarity/distance matrices.
+- `evaluation.ipynb` – Experiments on using raw aggregated features for classification for evaluation.
+- `interpretation.ipynb` – Model interpretation and analysis (e.g., attention, reconstruction plots).
+- `visualization.ipynb` – Visualization of dataset characteristics.
+
+### Classifiers (`models/`)
+This folder includes trained classifiers for graft loss, mortality and rejection.
+
+### Trained TAME (`model_checkpoints/`)
+The trained TAME on NephroCAGE is included in this folder.
+
+
+## Results
+Stratification experiments showed that clustering patients with TAME-based embeddings yields meaningful and valid subgroups, whereas clustering with temporal similarity matrices did not produce distinct groups. Furthermore, classification using the learned embeddings demonstrated strong performance in predicting graft loss and mortality, which altogether demonstrates that TAME is able to provide informative embeddings for this dataset.
+
+
+
+
+
